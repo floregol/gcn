@@ -19,7 +19,7 @@
 ##
 ##PBS -l walltime=4:00:00,mem=32gb,nodes=1:ppn=10:gpus=2
 
-#PBS -l walltime=72:00:00,mem=50gb,nodes=1:ppn=7
+#PBS -l walltime=72:00:00,mem=50gb,nodes=1:ppn=8
 
 ## example with only 4 processors
 ##   -> PBS -l nodes=1:ppn=4
@@ -91,4 +91,4 @@ PBS_O_WORKDIR="/home/floregol/gcn/gcn/greedy_sampling/"
 cd $PBS_O_WORKDIR
 source activate gcn
 export CUDA_VISIBLE_DEVICES="0"
-python reproduce_greedy.py
+python run.py -n 100.0 -S 1000 -C 8 -mp
