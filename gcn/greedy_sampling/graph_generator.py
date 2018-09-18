@@ -46,6 +46,12 @@ def generate_pref_attachment_graph(n):
 
 # Random graph with weight between [0,1]
 def generate_random_graph(n):
-    Random_graph_prob = 0.5
-    Random_graph = nx.erdos_renyi_graph(n, Random_graph_prob)
+    Random_graph = nx.Graph()
+    for node_pair in combinations(range(n), 2):  # Generate each possible egde
+        weight = uniform(0, 1.000001)  # Need to be [0,1]
+        if weight > 0:
+            Random_graph.add_edge(node_pair[0], node_pair[1], weight=weight)
+    if (len(Random_graph.nodes()) < n):  # Recursivly generate a new graph until all nodes are connected
+        del Random_graph  #  Delete the graph to avoid using memeroy unnecessarily
+        return generate_random_graph(n)
     return Random_graph
