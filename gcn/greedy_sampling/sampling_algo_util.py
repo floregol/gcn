@@ -13,15 +13,12 @@ def get_W(V_ksparse_H, H_h, H, V_ksparse):
 
 
 # Returns the index of the best node to add to the sampling set
-def argmax(K, W, cov_w, remaining_nodes, get_v):
-    u = (-float("inf"), -1)  # (score, index) to keep track of the best node so far
+def argmax(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, remaining_nodes, G_subset):
+    u = (float("inf"), -1)  # (score, index) to keep track of the best node so far
     for candidate in remaining_nodes:
-        v_u, v_u_H = get_v(candidate)
-        numerator = multi_dot([v_u_H, K, W, K, v_u])
-        lamda_inv = 1.0 / float(cov_w[candidate][candidate])
-        denumerator = lamda_inv + multi_dot([v_u_H, K, v_u])
-        score = numerator / denumerator
-        if score > u[0]:
+        possible_set = G_subset + [candidate]
+        score = get_MSE_score(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, possible_set)
+        if score < u[0]:
             u = (score, candidate)
     return u[1]
 

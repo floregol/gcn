@@ -4,16 +4,16 @@ from sampling_algo_util import *
 import numpy.linalg as LA
 
 
-def greedy_algo(get_v, cov_x, cov_w, W, number_node_sampled, num_nodes):
+def greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, number_node_sampled, num_nodes):
     # Variable initialisation
     G_subset = []
     remaining_node = list(range(0, num_nodes))
     K = cov_x
     for j in range(number_node_sampled):
-        u = argmax(K, W, cov_w, remaining_node, get_v)
+        u = argmax(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, remaining_node, G_subset)
         #K = update_K(K, W, cov_w, u, get_v) # not suppose to do that after all
         G_subset.append(u)  # Iterativly add a new node to the set
-        
+
         remaining_node.remove(u)
 
     return G_subset
@@ -49,7 +49,7 @@ def brute_force_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W, num
         subset_scores[str(list(possible_set))] = score
         if score <= optimal_K_T:
             c = True
-            
+
             optimal_K_T = score
             optimal_subset = possible_set
     if not c:
