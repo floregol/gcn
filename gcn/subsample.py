@@ -28,6 +28,7 @@ def get_sub_sampled_support(complete_support, node_to_keep):
 # Return a train mask for label_percent of the trainig set.
 # if maintain_label_balance, keep smallest number of labels per class in training set that respect the label_percent, except for 100 %
 def get_train_mask(label_percent, y_train, initial_train_mask, maintain_label_balance=False):
+
     train_index = np.argwhere(initial_train_mask).reshape(-1)
     train_mask = np.zeros((initial_train_mask.shape), dtype=bool)  # list of False
     if maintain_label_balance:
@@ -39,12 +40,14 @@ def get_train_mask(label_percent, y_train, initial_train_mask, maintain_label_ba
             smaller_num = min(
                 int(len(l) * (label_percent / 100))
                 for l in ones_index)  # find smaller number of ones per class that respect the % constraint
+            print(smaller_num)
             for ones in ones_index:
-                train_mask[ones[
-                    0:smaller_num]] = True  # set the same number of ones for each class, so the set is balanced
+                random_index = random.sample(list(ones), smaller_num)
+                train_mask[random_index] = True  # set the same number of ones for each class, so the set is balanced
         else:
             for ones in ones_index:
                 train_mask[ones] = True
+
     else:
         random_sampling_set_size = int((label_percent / 100) * train_index.shape[0])
         random_list = random.sample(range(train_index.shape[0]), random_sampling_set_size)
