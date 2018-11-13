@@ -5,15 +5,20 @@ from random import randrange, uniform
 from numpy.linalg import inv
 import scipy.sparse as sp
 
+
 def get_sparse_eigen_decomposition(graph, K):
     adj = nx.adjacency_matrix(graph, nodelist=sorted(graph.nodes()), weight='weight').toarray()
+    return get_sparse_eigen_decomposition_from_adj(adj, K)
+
+
+def get_sparse_eigen_decomposition_from_adj(adj, K):
     eigenval, eigenvectors = np.linalg.eig(adj)
     eigenval_Ksparse = np.argsort(eigenval)[-K:]  # Find top eigenvalues index (not absolute values)
-    V_ksparse = np.zeros((adj.shape[0],5))  # Only keep the eigenvectors of the max eigenvalues
-    V_ksparse[:,0:5] = eigenvectors[:,eigenval_Ksparse]
+    V_ksparse = np.zeros((adj.shape[0], 5))  # Only keep the eigenvectors of the max eigenvalues
+    V_ksparse[:, 0:5] = eigenvectors[:, eigenval_Ksparse]
     V_ksparse = np.matrix(V_ksparse)
     V_ksparse_H = V_ksparse.getH()
-    
+
     def get_v(index):
         v_index = V_ksparse_H[:, index]
         v_index_H = V_ksparse[index, :]

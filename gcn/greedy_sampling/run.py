@@ -31,9 +31,9 @@ relative_sub_Erdos = {'greedy': [], 'deterministic': [], 'random_leverage': [], 
 relative_sub_Pref = {'greedy': [], 'deterministic': [], 'random_leverage': [], 'uniform_random': []}
 reltive_sub_Random = {'greedy': [], 'deterministic': [], 'random_leverage': [], 'uniform_random': []}
 
-for graph_gen, result_dict in [(generate_random_graph, reltive_sub_Random),
-                               (generate_Erdos_Renyi_graph, relative_sub_Erdos), (generate_pref_attachment_graph,
-                                                                                  relative_sub_Pref)]:
+for graph_gen, result_dict in [(generate_Erdos_Renyi_graph, relative_sub_Erdos),
+                               (generate_random_graph, reltive_sub_Random), (generate_pref_attachment_graph,
+                                                                             relative_sub_Pref)]:
     if config['want_multiprocessing']:
         num_iter = int(config['NUM_SIMULATIONS'] / config['CORES'])
         pool = mp.Pool(processes=config['CORES'])
