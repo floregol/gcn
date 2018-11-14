@@ -9,15 +9,7 @@ from greedy_sampling.linear_H import get_identity_H
 from greedy_sampling.signal_generator import get_random_signal_zero_mean_circular
 from greedy_sampling.sampling_algo import greedy_algo
 from numpy.linalg import multi_dot
-"""
-Helper functions for sampling algorithms. 
-"""
-
-
-# W = V_k_H * H_H * H * V_K
-def get_W(V_ksparse_H, H_h, H, V_ksparse):
-    W = multi_dot([V_ksparse_H, H_h, H, V_ksparse])
-    return W
+from greedy_sampling.sampling_algo_util import *
 
 
 random.seed(123)
