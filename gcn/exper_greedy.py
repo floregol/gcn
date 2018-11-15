@@ -165,7 +165,7 @@ if __name__ == "__main__":
     list_adj = None
     maintain_label_balance_list = [True, False]
     with_test_features_list = [True]
-    models_list = ['gcn_greedy', 'gcn']
+    models_list = ['gcn_greedy']
 
     # RUN
     train_and_save_results(

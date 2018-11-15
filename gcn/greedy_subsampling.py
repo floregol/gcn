@@ -38,8 +38,7 @@ def get_train_mask_greedy(label_percent, initial_train_mask, V_ksparse, V_kspars
     # Get sampling set selected by the diff. algorithms
     greedy_subset = greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, random_sampling_set_size,
                                 num_nodes)
-    print(greedy_subset)
-
+    train_mask[greedy_subset] = True
     return train_mask
 
 
