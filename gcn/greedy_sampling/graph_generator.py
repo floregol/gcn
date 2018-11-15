@@ -4,6 +4,8 @@ from itertools import combinations
 from random import randrange, uniform
 from numpy.linalg import inv
 import scipy.sparse as sp
+import pickle as pk
+import os
 
 
 def get_sparse_eigen_decomposition(graph, K):
@@ -11,8 +13,35 @@ def get_sparse_eigen_decomposition(graph, K):
     return get_sparse_eigen_decomposition_from_adj(adj, K)
 
 
+#TODO remove to only use the svd version
 def get_sparse_eigen_decomposition_from_adj(adj, K):
     eigenval, eigenvectors = np.linalg.eig(adj)
+    eigenval_Ksparse = np.argsort(eigenval)[-K:]  # Find top eigenvalues index (not absolute values)
+    V_ksparse = np.zeros((adj.shape[0], K))  # Only keep the eigenvectors of the max eigenvalues
+    V_ksparse[:, 0:K] = eigenvectors[:, eigenval_Ksparse]
+    V_ksparse = np.matrix(V_ksparse)
+    V_ksparse_H = V_ksparse.getH()
+
+    def get_v(index):
+        v_index = V_ksparse_H[:, index]
+        v_index_H = V_ksparse[index, :]
+        return v_index, v_index_H
+
+    return V_ksparse, V_ksparse_H, get_v
+
+
+def get_sparse_eigen_decomposition_from_svd_adj(adj, K):
+    eigen_file_name = "shape_" + str(adj.shape[0]) + '.p'
+    if not (os.path.exists(eigen_file_name)):
+        u, eigenval, eigenvectors = np.linalg.svd(adj, full_matrices=True)
+        svd_decomposition = {'u': u, 's': eigenval, 'vh': eigenvectors}
+        pk.dump(svd_decomposition, open((eigen_file_name), 'wb'))
+    else:
+        with open(eigen_file_name, 'rb') as f:
+            svd_decomposition = pk.load(f, encoding='latin1')
+        eigenval = svd_decomposition['s']
+        eigenvectors = svd_decomposition['vh']
+
     eigenval_Ksparse = np.argsort(eigenval)[-K:]  # Find top eigenvalues index (not absolute values)
     V_ksparse = np.zeros((adj.shape[0], K))  # Only keep the eigenvectors of the max eigenvalues
     V_ksparse[:, 0:K] = eigenvectors[:, eigenval_Ksparse]

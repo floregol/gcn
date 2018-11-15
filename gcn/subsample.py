@@ -3,14 +3,6 @@ import time
 import numpy as np
 import copy
 from itertools import compress
-import scipy.sparse as sp
-from greedy_sampling.graph_generator import get_sparse_eigen_decomposition_from_adj
-from greedy_sampling.linear_H import get_identity_H
-from greedy_sampling.signal_generator import get_random_signal_zero_mean_circular
-from greedy_sampling.sampling_algo import greedy_algo
-from numpy.linalg import multi_dot
-from greedy_sampling.sampling_algo_util import *
-
 
 random.seed(123)
 
@@ -36,7 +28,7 @@ def get_sub_sampled_support(complete_support, node_to_keep):
 
 # Return a train mask for label_percent of the trainig set.
 # if maintain_label_balance, keep smallest number of labels per class in training set that respect the label_percent, except for 100 %
-def get_train_mask(label_percent, y_train, initial_train_mask, adj, maintain_label_balance=False):
+def get_train_mask(label_percent, y_train, initial_train_mask, maintain_label_balance=False):
 
     train_index = np.argwhere(initial_train_mask).reshape(-1)
     train_mask = np.zeros((initial_train_mask.shape), dtype=bool)  # list of False
@@ -62,42 +54,6 @@ def get_train_mask(label_percent, y_train, initial_train_mask, adj, maintain_lab
         random_list = random.sample(range(train_index.shape[0]), random_sampling_set_size)
         train_mask[random_list] = True
 
-    return train_mask
-
-
-def get_train_mask_greedy(label_percent, y_train, initial_train_mask, adj, maintain_label_balance=False):
-    now = time.time()
-    dense_adj = sp.csr_matrix.todense(adj)
-    K_sparse = 10
-    noise = 0.01
-    num_nodes = dense_adj.shape[0]
-
-    train_index = np.argwhere(initial_train_mask).reshape(-1)
-    #TODO filter by adj train
-    train_mask = np.zeros((initial_train_mask.shape), dtype=bool)  # list of False
-
-    random_sampling_set_size = int((label_percent / 100) * train_index.shape[0])
-    print(random_sampling_set_size)
-    V_ksparse, V_ksparse_H, get_v = get_sparse_eigen_decomposition_from_adj(dense_adj, K_sparse)
-    print('done')
-    # Linear transformation of the signal
-    H, H_h = get_identity_H(num_nodes)
-    # Random signal and noise vectors
-    x, cov_x = get_random_signal_zero_mean_circular(1.0, K_sparse)
-    w, cov_w = get_random_signal_zero_mean_circular(noise, num_nodes)
-
-    # Noisy observation. (Not used for now)
-    #y = x + w
-
-    # Pre computation
-    W = get_W(V_ksparse_H, H_h, H, V_ksparse)
-
-    # Get sampling set selected by the diff. algorithms
-    greedy_subset = greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, random_sampling_set_size,
-                                num_nodes)
-    print(greedy_subset)
-    print('time' + str(time.time() - now))
-    exit()
     return train_mask
 
 

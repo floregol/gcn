@@ -30,9 +30,6 @@ def simulate(graph_gen, num_iter, config):
         # Noisy observation. (Not used for now)
         #y = x + w
 
-        # Pre computation
-        W = get_W(V_ksparse_H, H_h, H, V_ksparse)
-
         # Get sampling set selected by the diff. algorithms
         greedy_subset = greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, config['number_node_sampled'], config['NUM_NODES'])
 
