@@ -31,6 +31,7 @@ def get_sparse_eigen_decomposition_from_adj(adj, K):
 
 
 def get_sparse_eigen_decomposition_from_svd_adj(adj, K):
+    print(adj.shape[0])
     eigen_file_name = "shape_" + str(adj.shape[0]) + '.p'
     if not (os.path.exists(eigen_file_name)):
         u, eigenval, eigenvectors = np.linalg.svd(adj, full_matrices=True)

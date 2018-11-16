@@ -15,6 +15,7 @@ from settings import set_tf_flags, graph_settings
 from classification_stats import get_classification_stats
 from graph_processing import *
 from greedy_subsampling import *
+import multiprocessing as mp
 """
 Class used to plot graph for multiple labels % . 
 """
@@ -28,7 +29,6 @@ def train_and_save(trials, label_percent, model_gcn, get_train_mask_fun, adj, fe
     acc_trials = np.zeros((trials,))
     for trial in range(trials):
         train_mask = get_train_mask_fun()
-        paths_to_known_list = get_num_paths_to_known(get_list_from_mask(train_mask), stats_adj_helper)
         print_partition_index(initial_train_mask, "Train", y_train)
         print_partition_index(val_mask, "Val", y_val)
         print_partition_index(test_mask, "Test", y_test)
@@ -66,29 +66,7 @@ def train_and_save(trials, label_percent, model_gcn, get_train_mask_fun, adj, fe
     print(acc_average)
     acc_var = np.std(acc_trials)
     print(acc_var)
-    result.append((model_gcn, known_percent, acc_average, acc_var))
-    correct_paths_to_known, incorrect_paths_to_known = get_classification_stats(list_node_correctly_classified,
-                                                                                get_list_from_mask(test_mask),
-                                                                                paths_to_known_list)
-    info = {
-        'MAINTAIN_LABEL_BALANCE': MAINTAIN_LABEL_BALANCE,
-        'WITH_TEST': WITH_TEST,
-        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        'params': settings
-    }
-
-    dict_output = {
-        'results': result,
-        'info': info,
-        'stats': {
-            'correct_paths_to_known': correct_paths_to_known,
-            'incorrect_paths_to_known': incorrect_paths_to_known
-        }
-    }
-    pk.dump(dict_output,
-            open(
-                os.path.join(result_folder, fileinfo + 'w_test_features=' + str(WITH_TEST) + '_label_balance=' +
-                             str(MAINTAIN_LABEL_BALANCE) + '_results.p'), 'wb'))
+    return (model_gcn, known_percent, acc_average, acc_var)
 
 
 def train_and_save_results(adj,
@@ -113,32 +91,46 @@ def train_and_save_results(adj,
         os.makedirs(result_folder)
     trials = 5
     for model_gcn in models_list:
-        if model_gcn is 'gcn_greedy':
-            K_sparse = 10
-            noise = 0.01
-            V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, num_nodes = greedy_eigenvector_precomputation(
-                adj, K_sparse, noise)
+        result = []
+        K_sparse = 10
+        noise = 0.01
+        V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, num_nodes = greedy_eigenvector_precomputation(
+            adj, K_sparse, noise, initial_train_mask)
 
-            def get_train_mask_fun():
-                return get_train_mask_greedy(label_percent, initial_train_mask, V_ksparse, V_ksparse_H, get_v, H, H_h,
-                                             cov_x, cov_w, num_nodes)
+        def get_train_mask_fun():
+            return get_train_mask_greedy(label_percent, initial_train_mask, V_ksparse, V_ksparse_H, get_v, H, H_h,
+                                         cov_x, cov_w, num_nodes)
 
-            for label_percent in labels_percent_list:
+        for label_percent in labels_percent_list:
+            result.append(
                 train_and_save(1, label_percent, model_gcn, get_train_mask_fun, adj, features, y_train, y_val, y_test,
                                initial_train_mask, val_mask, test_mask, True, True, SHOW_TEST_VAL_DATASET_STATS,
-                               VERBOSE_TRAINING, settings, fileinfo, stats_adj_helper)
-        else:
-            for MAINTAIN_LABEL_BALANCE in maintain_label_balance_list:
-                for WITH_TEST in with_test_features_list:
-                    for label_percent in labels_percent_list:
+                               VERBOSE_TRAINING, settings, fileinfo, stats_adj_helper))
 
-                        def get_train_mask_fun():
-                            return get_train_mask(label_percent, y_train, initial_train_mask, MAINTAIN_LABEL_BALANCE)
+        info = {
+            'MAINTAIN_LABEL_BALANCE': MAINTAIN_LABEL_BALANCE,
+            'WITH_TEST': WITH_TEST,
+            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'params': settings
+        }
 
-                        train_and_save(trials, label_percent, model_gcn, get_train_mask_fun, adj, features, y_train,
-                                       y_val, y_test, initial_train_mask, val_mask, test_mask, MAINTAIN_LABEL_BALANCE,
-                                       WITH_TEST, SHOW_TEST_VAL_DATASET_STATS, VERBOSE_TRAINING, settings, fileinfo,
-                                       stats_adj_helper)
+        dict_output = {'results': result, 'info': info}
+        pk.dump(dict_output,
+                open(
+                    os.path.join(result_folder, fileinfo + 'w_test_features=' + str(WITH_TEST) + '_label_balance=' +
+                                 str(MAINTAIN_LABEL_BALANCE) + '_results.p'), 'wb'))
+        # else:
+        #     for MAINTAIN_LABEL_BALANCE in maintain_label_balance_list:
+        #         for WITH_TEST in with_test_features_list:
+        #             for label_percent in labels_percent_list:
+
+        #                 def get_train_mask_fun():
+        #                     return get_train_mask(label_percent, y_train, initial_train_mask, MAINTAIN_LABEL_BALANCE)
+
+        #                 train_and_save(trials, label_percent, model_gcn, get_train_mask_fun, adj, features, y_train,
+        #                                y_val, y_test, initial_train_mask, val_mask, test_mask, MAINTAIN_LABEL_BALANCE,
+        #                                WITH_TEST, SHOW_TEST_VAL_DATASET_STATS, VERBOSE_TRAINING, settings, fileinfo,
+        #                                stats_adj_helper)
 
 
 if __name__ == "__main__":
@@ -165,7 +157,7 @@ if __name__ == "__main__":
     list_adj = None
     maintain_label_balance_list = [True, False]
     with_test_features_list = [True]
-    models_list = ['gcn_greedy']
+    models_list = ['gcn']
 
     # RUN
     train_and_save_results(
