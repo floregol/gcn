@@ -4,17 +4,23 @@ from sampling_algo_util import *
 import numpy.linalg as LA
 
 
-def greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, number_node_sampled, num_nodes):
+def greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W, number_node_sampled, num_nodes, fast_version):
     # Variable initialisation
     G_subset = []
-    remaining_node = list(range(0, num_nodes))
+    remaining_nodes = list(range(0, num_nodes))
     K = cov_x
+    if fast_version:
+        print("Using the FAST Approximation greedy algo")
     for j in range(number_node_sampled):
-        u = argmax(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, remaining_node, G_subset)
-        #K = update_K(K, W, cov_w, u, get_v) # not suppose to do that after all
+        if fast_version:  # Used the approximation to reduce the time complexity
+            u = argmax_fast(K, W, cov_w, remaining_nodes, get_v)
+            K = update_K(K, W, cov_w, u, get_v)  # not suppose to do that after all
+        else:
+            u = argmax(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, remaining_nodes, G_subset)
+
         G_subset.append(u)  # Iterativly add a new node to the set
 
-        remaining_node.remove(u)
+        remaining_nodes.remove(u)
 
     return G_subset
 

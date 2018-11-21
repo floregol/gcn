@@ -18,6 +18,7 @@ parser.add_argument('-K', '--K_sparse', type=int, default=5, help='K sparsity')
 parser.add_argument('-l', '--number_node_sampled', type=int, default=5, help=' Subset size')
 parser.add_argument('-C', '--CORES', type=int, default=4, help=' Num of process in parrallel')
 parser.add_argument('-mp', '--want_multiprocessing', action="store_true", help='multiprocessing mode')
+parser.add_argument('-fa', '--FAST_APPROX', action="store_false", help='using the fast approximation algo')
 parser.add_argument('--debug', action="store_true", help='debug mode')
 
 print(">>>>>>> Reading parameters")
