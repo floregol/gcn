@@ -28,7 +28,7 @@ def train_and_save(trials, label_percent, model_gcn, get_train_mask_fun, adj, fe
     result = []
     acc_trials = np.zeros((trials,))
     for trial in range(trials):
-        train_mask = get_train_mask_fun()
+        train_mask, label_percent = get_train_mask_fun()
         print_partition_index(initial_train_mask, "Train", y_train)
         print_partition_index(val_mask, "Val", y_val)
         print_partition_index(test_mask, "Test", y_test)
@@ -93,13 +93,13 @@ def train_and_save_results(adj,
     for model_gcn in models_list:
         result = []
         K_sparse = 10
-        noise = 0.01
-        V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, num_nodes = greedy_eigenvector_precomputation(
+        noise = 100
+        V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W, num_nodes = greedy_eigenvector_precomputation(
             adj, K_sparse, noise, initial_train_mask)
 
         def get_train_mask_fun():
             return get_train_mask_greedy(label_percent, initial_train_mask, V_ksparse, V_ksparse_H, get_v, H, H_h,
-                                         cov_x, cov_w, num_nodes)
+                                         cov_x, cov_w, W, num_nodes)
 
         for label_percent in labels_percent_list:
             result.append(
@@ -108,17 +108,19 @@ def train_and_save_results(adj,
                                VERBOSE_TRAINING, settings, fileinfo, stats_adj_helper))
 
         info = {
-            'MAINTAIN_LABEL_BALANCE': MAINTAIN_LABEL_BALANCE,
-            'WITH_TEST': WITH_TEST,
+            'MAINTAIN_LABEL_BALANCE': 'Greedy',
+            'WITH_TEST': False,
             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'params': settings
         }
 
         dict_output = {'results': result, 'info': info}
-        pk.dump(dict_output,
-                open(
-                    os.path.join(result_folder, fileinfo + 'w_test_features=' + str(WITH_TEST) + '_label_balance=' +
-                                 str(MAINTAIN_LABEL_BALANCE) + '_results.p'), 'wb'))
+        pk.dump(
+            dict_output,
+            open(
+                os.path.join(result_folder,
+                             fileinfo + 'w_test_features=' + str(False) + '_label_balance=' + 'Greedy' + '_results.p'),
+                'wb'))
         # else:
         #     for MAINTAIN_LABEL_BALANCE in maintain_label_balance_list:
         #         for WITH_TEST in with_test_features_list:
@@ -152,7 +154,7 @@ if __name__ == "__main__":
     # Some preprocessing
     features = preprocess_features(features)
 
-    labels_percent_list = [5, 10, 15, 20, 30, 50, 75]
+    labels_percent_list = [5, 10, 15, 20, 30, 40,50, 60,75,85,100]
     #list_adj = get_adj_powers(adj.toarray())
     list_adj = None
     maintain_label_balance_list = [True, False]

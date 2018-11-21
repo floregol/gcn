@@ -1,6 +1,6 @@
 import numpy as np
 from itertools import combinations
-from sampling_algo_util import *
+from greedy_sampling.sampling_algo_util import *
 import numpy.linalg as LA
 
 
