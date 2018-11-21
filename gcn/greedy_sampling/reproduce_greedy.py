@@ -26,7 +26,7 @@ def simulate(graph_gen, num_iter, config):
         # Random signal and noise vectors
         x, cov_x = get_random_signal_zero_mean_circular(1.0, config['K_sparse'])
         w, cov_w = get_random_signal_zero_mean_circular(config['NOISE_CONSTANT'], config['NUM_NODES'])
-
+        W = get_W(V_ksparse_H, H_h, H, V_ksparse)
         # Noisy observation. (Not used for now)
         #y = x + w
 

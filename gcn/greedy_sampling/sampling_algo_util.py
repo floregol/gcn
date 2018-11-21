@@ -15,7 +15,6 @@ def get_W(V_ksparse_H, H_h, H, V_ksparse):
 # Returns the index of the best node to add to the sampling set
 def argmax(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, remaining_nodes, G_subset):
     u = (float("inf"), -1)  # (score, index) to keep track of the best node so far
-    print("searching a new node")
     for candidate in remaining_nodes:
 
         possible_set = G_subset + [candidate]
