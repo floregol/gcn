@@ -15,7 +15,6 @@ class Model(object):
         if not name:
             name = self.__class__.__name__.lower()
         self.name = name
-
         logging = kwargs.get('logging', False)
         self.logging = logging
 
