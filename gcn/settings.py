@@ -55,7 +55,7 @@ def graph_settings():
     return settings
 
 
-def set_tf_flags(params, flags):
+def set_tf_flags(params, flags, verbose=False):
 
     flags.DEFINE_string('dataset', params['dataset'], 'Dataset string.')
     flags.DEFINE_integer('epochs', params['epochs'], 'Number of epochs to train.')
@@ -64,3 +64,10 @@ def set_tf_flags(params, flags):
     flags.DEFINE_float('weight_decay', params['weight_decay'], 'Weight for L2 loss on embedding matrix.')
     flags.DEFINE_float('dropout', params['dropout'], 'Dropout rate (1 - keep probability).')
     flags.DEFINE_integer('early_stopping', params['early_stopping'], 'Tolerance for early stopping (# of epochs).')
+
+    if verbose:
+        for key, value in params.items():
+            print('Set {0} to {1}'.format(
+                key,
+                value,
+            ))
