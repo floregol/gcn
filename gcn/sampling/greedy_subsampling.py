@@ -10,18 +10,16 @@ import time
 import random
 
 
-def greedy_eigenvector_precomputation(adj, K_sparse, noise, initial_train_mask):
+def greedy_eigenvector_precomputation(adj, K_sparse, noise,
+                                      initial_train_mask):
 
     train_index = np.argwhere(initial_train_mask).reshape(-1)
     now = time.time()
-
-    # slice_sparse = adj.tocsc()[:, train_index]
-    # train_adj = slice_sparse.tocsr()[train_index, :]
-    # dense_train_adj = sp.csr_matrix.todense(train_adj)
-    dense_train_adj = adj
+    dense_train_adj = sp.csr_matrix.todense(adj)
     num_nodes = dense_train_adj.shape[0]
 
-    V_ksparse, V_ksparse_H, get_v = get_sparse_eigen_decomposition_from_svd_adj(dense_train_adj, K_sparse)
+    V_ksparse, V_ksparse_H, get_v = get_sparse_eigen_decomposition_from_svd_adj(
+        dense_train_adj, K_sparse)
     # Linear transformation of the signal
     H, H_h = get_identity_H(num_nodes)
     # Random signal and noise vectors
@@ -32,21 +30,25 @@ def greedy_eigenvector_precomputation(adj, K_sparse, noise, initial_train_mask):
     return V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W, num_nodes
 
 
-def get_train_mask_greedy(label_percent, initial_train_mask, V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W,
+def get_train_mask_greedy(label_percent, initial_train_mask, V_ksparse,
+                          V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W,
                           num_nodes):
 
     train_index = np.argwhere(initial_train_mask).reshape(-1)
 
     #TODO filter by adj train
-    train_mask = np.zeros((initial_train_mask.shape), dtype=bool)  # list of False
-    
-    random_sampling_set_size = int((label_percent / 100) * train_index.shape[0])
+    train_mask = np.zeros(
+        (initial_train_mask.shape), dtype=bool)  # list of False
+
+    random_sampling_set_size = int(
+        (label_percent / 100) * train_index.shape[0])
     # Get sampling set selected by the diff. algorithms
-    greedy_subset = greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W, random_sampling_set_size,
-                                num_nodes, True)
+    greedy_subset = greedy_algo(V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x,
+                                cov_w, W, random_sampling_set_size, num_nodes,
+                                True)
     #greedy_subset = random.sample(range(train_index.shape[0]), random_sampling_set_size)
     train_mask[greedy_subset] = True
-    mask = np.ones((initial_train_mask.shape), dtype=bool) 
+    mask = np.ones((initial_train_mask.shape), dtype=bool)
     mask[train_index] = 0
     train_mask[mask] = False
     label_percent = (100 * np.sum(train_mask) / train_index.shape[0])
