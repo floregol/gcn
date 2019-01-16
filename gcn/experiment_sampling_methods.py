@@ -16,7 +16,6 @@ Class used to plot graph for multiple labels % .
 """
 result_folder = "results_sampling"
 
-
 def train_and_save_results(trials,
                            adj,
                            features,
@@ -37,6 +36,9 @@ def train_and_save_results(trials,
                            fileinfo="",
                            stats_adj_helper=None):
     # Create result folders
+    print("Saving results in folder " + result_folder)
+    print()
+    print("-------------------------------------")
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)
 
@@ -44,19 +46,14 @@ def train_and_save_results(trials,
         print("Sampling method : " + sampling_method)
         print("-------------------------------------")
         for model_gcn in models_list:
-            results_tuples = sampling_func(
-                trials, adj, initial_train_mask, labels_percent_list,
-                model_gcn, features, y_train, y_val, y_test, val_mask,
-                test_mask, SHOW_TEST_VAL_DATASET_STATS, VERBOSE_TRAINING,
-                settings, fileinfo, stats_adj_helper)
+            results_tuples = sampling_func(trials, adj, initial_train_mask, labels_percent_list, model_gcn, features,
+                                           y_train, y_val, y_test, val_mask, test_mask, SHOW_TEST_VAL_DATASET_STATS,
+                                           VERBOSE_TRAINING, settings, fileinfo, stats_adj_helper)
             for dict_output, results_filename in results_tuples:
-                pk.dump(
-                    dict_output,
-                    open(
-                        os.path.join(
-                            result_folder,
-                            settings['params']['dataset'] + "_sampling_method="
-                            + sampling_method + "_" + results_filename), 'wb'))
+                pk.dump(dict_output,
+                        open(
+                            os.path.join(result_folder, settings['params']['dataset'] + "_sampling_method=" +
+                                         sampling_method + "_" + results_filename), 'wb'))
 
 
 """
@@ -85,22 +82,19 @@ if __name__ == "__main__":
 
     TRIALS = 20
     # Load data
-    adj, features, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(
-        FLAGS.dataset)
+    adj, features, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(FLAGS.dataset)
     # Some preprocessing
     features = preprocess_features(features)
 
     labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
     #labels_percent_list = [30, 50]
-
+    print("Getting A^p")
     #list_adj = get_adj_powers(adj.toarray())
     list_adj = None
-
-    maintain_label_balance_list = [True, False]
+    maintain_label_balance_list = [False]
     with_test_features_list = [True]
     models_list = ['gcn']
-    sampling_list = [('EDS', EDS_sampling_experiments),
-                     ('random', random_sampling_experiments),
+    sampling_list = [('EDS', EDS_sampling_experiments), ('random', random_sampling_experiments),
                      ('greedy', greedy_sampling_experiments), ('degree', None)]
 
     # RUN
