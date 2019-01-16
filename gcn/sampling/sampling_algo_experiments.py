@@ -3,7 +3,7 @@ from sampling.EDS_subsampling import *
 from train_gcnn_trials import train_results
 from subsample import get_train_mask
 from datetime import datetime
-
+from tqdm import tqdm
 
 def greedy_sampling_experiments(trials, adj, initial_train_mask,
                                 labels_percent_list, model_gcn, features,
