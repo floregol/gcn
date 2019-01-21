@@ -4,7 +4,7 @@ from metrics import *
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-
+tf.logging.set_verbosity(tf.logging.ERROR)
 class Model(object):
 
     def __init__(self, **kwargs):

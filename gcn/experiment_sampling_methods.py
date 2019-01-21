@@ -4,7 +4,10 @@ import os
 from utils import *
 from settings import set_tf_flags, graph_settings
 from sampling.sampling_algo_experiments import sampling_experiment
-from sampling.sampler import EDS_Sampler
+from sampling.eds_sampler import EDSSampler
+from sampling.random_sampler import RandomSampler
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 """
 Sampling experiment. 
 Different sampling algorithms are tried to pick out nodes that will composed the labeled training set for GCN training.
@@ -26,8 +29,9 @@ models_list                 : Models to try. Subsample GCN strictly uses subsmap
 if __name__ == "__main__":
     # Tensorflow settings
     flags = tf.app.flags
+
     FLAGS = flags.FLAGS
-    settings = graph_settings()['default']
+    settings = graph_settings()['quick']
     set_tf_flags(settings['params'], flags, verbose=True)
 
     # Verbose settings
@@ -38,15 +42,15 @@ if __name__ == "__main__":
     seed = settings['seed']
     np.random.seed(seed)
 
-    SAMPLING_TRIALS = 20  # How many time the same experiment will be repeated to get standard dev.
+    SAMPLING_TRIALS = 16  # How many time the same experiment will be repeated to get standard dev.
     # Load data. Features and labels.
     adj, features, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(
         FLAGS.dataset)
     # Some preprocessing
     features = preprocess_features(features)
 
-    labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
-    #labels_percent_list = [30, 50]
+    #labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
+    labels_percent_list = [30, 50]
     print(
         "Getting powers of the adjacency matrix A"
     )  # TODO optimize this step by using the already computer eigenvalues
@@ -56,12 +60,14 @@ if __name__ == "__main__":
 
     print("Finish getting powers of A")
     fileinfo = ""
-
+    K_sparse_list = [5, 10, 100]
     maintain_label_balance_list = [False]
     with_test_features_list = [True]
     models_list = ['gcn']
     sampler_list = [
-        EDS_Sampler(initial_train_mask, adj)
+        RandomSampler(initial_train_mask, adj, y_train),
+        EDSSampler(initial_train_mask, adj, K_sparse_list)
+
         # , ('random', random_sampling_experiments),
         #                  ('greedy', greedy_sampling_experiments), ('degree', None)
     ]
@@ -92,4 +98,4 @@ if __name__ == "__main__":
                         os.path.join(
                             result_folder,
                             settings['params']['dataset'] + "_sampling_method="
-                            + sampling_method + "_" + results_filename), 'wb'))
+                            + sampler.name + "_" + results_filename), 'wb'))

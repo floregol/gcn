@@ -6,7 +6,6 @@ from knn import *
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-
 def train_model(model_func,
                 num_supports,
                 support,
