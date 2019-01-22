@@ -51,8 +51,8 @@ if __name__ == "__main__":
     # Some preprocessing
     features = preprocess_features(features)
 
-    #labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
-    labels_percent_list = [30, 50]
+    labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
+    #labels_percent_list = [30, 50]
 
     print(
         "Getting powers of the adjacency matrix A"
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     stats_adj_helper = list_adj
 
     print("Finish getting powers of A")
-    fileinfo = ""
+    fileinfo = "Official"
     K_sparse_list = [5, 10, 100]
     noise_list = [0.01, 1, 100]
     maintain_label_balance_list = [False]
@@ -73,12 +73,10 @@ if __name__ == "__main__":
         GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
         RandomSampler(initial_train_mask, adj, y_train),
         MaxDegreeSampler(initial_train_mask, adj)
-        # , ('random', random_sampling_experiments),
-        #                  ('greedy', greedy_sampling_experiments), ('degree', None)
     ]
 
     # Create result folders
-    
+
     print("Saving results in folder " + result_folder)
     print()
     print("-------------------------------------")

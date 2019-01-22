@@ -8,7 +8,7 @@ import numpy as np
 class MaxDegreeSampler(Sampler):
     def __init__(self, initial_train_mask, adj):
         self.name = "MaxDegree"
-        self.multi_trials = False
+        self.multi_trials = True
         super(MaxDegreeSampler, self).__init__(initial_train_mask, adj)
 
     def get_results_tuple(self, fileinfo, settings, result):
