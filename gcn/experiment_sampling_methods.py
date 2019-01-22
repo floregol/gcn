@@ -6,6 +6,7 @@ from settings import set_tf_flags, graph_settings
 from sampling.sampling_algo_experiments import sampling_experiment
 from sampling.eds_sampler import EDSSampler
 from sampling.random_sampler import RandomSampler
+from sampling.greedy_sampler import GreedySampler
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 """
@@ -61,10 +62,12 @@ if __name__ == "__main__":
     print("Finish getting powers of A")
     fileinfo = ""
     K_sparse_list = [5, 10, 100]
+    noise_list = [0.01, 1, 100]
     maintain_label_balance_list = [False]
     with_test_features_list = [True]
     models_list = ['gcn']
     sampler_list = [
+        GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
         RandomSampler(initial_train_mask, adj, y_train),
         EDSSampler(initial_train_mask, adj, K_sparse_list)
 

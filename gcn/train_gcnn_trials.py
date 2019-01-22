@@ -53,6 +53,7 @@ def trial_run(seed, num_iter, label_percent, model_gcn, sampler, adj, features,
     acc_iter = []
     for iter in range(num_iter):
         train_mask, label_percent = sampler.get_train_mask_fun(seed)
+        print(train_mask)
         if VERBOSE_TRAINING:
             print_partition_index(initial_train_mask, "Train", y_train)
             print_partition_index(val_mask, "Val", y_val)
