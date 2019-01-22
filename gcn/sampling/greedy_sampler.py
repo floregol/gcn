@@ -1,7 +1,15 @@
 from sampling.greedy_subsampling import *
 from sampling.sampler import Sampler
+from sampling.eigen_utils import eigenvector_precomputation
 from datetime import datetime
 from tqdm import tqdm
+import scipy.sparse as sp
+from greedy_sampling.graph_generator import *
+from greedy_sampling.sampling_algo import greedy_algo
+from greedy_sampling.sampling_algo_util import *
+import numpy as np
+
+import random
 
 
 class GreedySampler(Sampler):
@@ -11,18 +19,19 @@ class GreedySampler(Sampler):
         self.K_sparse = 0
         self.noise_list = noise_list
         self.noise = 0
+        self.multi_trials = False
         super(GreedySampler, self).__init__(initial_train_mask, adj)
 
     def precomputations(self):
-        self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h, self.cov_x, self.cov_w, self.W, self.num_nodes = greedy_eigenvector_precomputation(
+        self.V_ksparse, self.V_ksparse_H, _, self.H, self.H_h, self.cov_x, self.cov_w, self.W, self.num_nodes = eigenvector_precomputation(
             self.adj, self.K_sparse, self.noise, self.initial_train_mask)
 
     def next_parameter(self):
         if (self.sampling_config_index == len(self.noise_list) * len(
                 self.K_sparse_list)):
             return False
-        self.K_sparse = self.K_sparse_list[self.sampling_config_index %
-                                           len(self.noise_list)]
+        self.K_sparse = self.K_sparse_list[self.sampling_config_index % len(
+            self.noise_list)]
         self.noise = self.noise_list[int(
             self.sampling_config_index / len(self.noise_list))]
         print(str(self.K_sparse) + "," + str(self.noise))
@@ -38,8 +47,29 @@ class GreedySampler(Sampler):
                 self.noise) + '_results.p'
         return (self.dict_output, results_filename)
 
+    def get_v(self, index):
+        v_index = self.V_ksparse_H[:, index]
+        v_index_H = self.V_ksparse[index, :]
+        return v_index, v_index_H
+
     def get_train_mask_fun(self, seed):
-        return get_train_mask_greedy(
-            self.label_percent, self.initial_train_mask, self.V_ksparse,
-            self.V_ksparse_H, self.get_v, self.H, self.H_h, self.cov_x,
-            self.cov_w, self.W, self.num_nodes)
+        train_index = np.argwhere(self.initial_train_mask).reshape(-1)
+
+        #TODO filter by adj train
+        train_mask = np.zeros(
+            (self.initial_train_mask.shape), dtype=bool)  # list of False
+
+        random_sampling_set_size = int(
+            (self.label_percent / 100) * train_index.shape[0])
+        # Get sampling set selected by the diff. algorithms
+        greedy_subset = greedy_algo(
+            self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h,
+            self.cov_x, self.cov_w, self.W, random_sampling_set_size,
+            self.num_nodes, True, False)
+        #greedy_subset = random.sample(range(train_index.shape[0]), random_sampling_set_size)
+        train_mask[greedy_subset] = True
+        mask = np.ones((self.initial_train_mask.shape), dtype=bool)
+        mask[train_index] = 0
+        train_mask[mask] = False
+        label_percent = (100 * np.sum(train_mask) / train_index.shape[0])
+        return train_mask, label_percent

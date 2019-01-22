@@ -7,6 +7,7 @@ from sampling.sampling_algo_experiments import sampling_experiment
 from sampling.eds_sampler import EDSSampler
 from sampling.random_sampler import RandomSampler
 from sampling.greedy_sampler import GreedySampler
+from sampling.max_degree_sampler import MaxDegreeSampler
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 """
@@ -32,7 +33,7 @@ if __name__ == "__main__":
     flags = tf.app.flags
 
     FLAGS = flags.FLAGS
-    settings = graph_settings()['quick']
+    settings = graph_settings()['default']
     set_tf_flags(settings['params'], flags, verbose=True)
 
     # Verbose settings
@@ -52,6 +53,7 @@ if __name__ == "__main__":
 
     #labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
     labels_percent_list = [30, 50]
+
     print(
         "Getting powers of the adjacency matrix A"
     )  # TODO optimize this step by using the already computer eigenvalues
@@ -67,15 +69,16 @@ if __name__ == "__main__":
     with_test_features_list = [True]
     models_list = ['gcn']
     sampler_list = [
+        EDSSampler(initial_train_mask, adj, K_sparse_list),
         GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
         RandomSampler(initial_train_mask, adj, y_train),
-        EDSSampler(initial_train_mask, adj, K_sparse_list)
-
+        MaxDegreeSampler(initial_train_mask, adj)
         # , ('random', random_sampling_experiments),
         #                  ('greedy', greedy_sampling_experiments), ('degree', None)
     ]
 
     # Create result folders
+    
     print("Saving results in folder " + result_folder)
     print()
     print("-------------------------------------")
@@ -84,6 +87,7 @@ if __name__ == "__main__":
 
     # Run the experiment
     for sampler in sampler_list:
+        print()
         print("Sampling method : " + sampler.name)
         print("-------------------------------------")
         for model_gcn in models_list:

@@ -1,6 +1,8 @@
 from sampling.greedy_subsampling import *
 from sampling.sampler import Sampler
+from sampling.eigen_utils import eigenvector_precomputation
 from datetime import datetime
+import numpy as np
 from tqdm import tqdm
 
 
@@ -10,11 +12,12 @@ class EDSSampler(Sampler):
         self.K_sparse_list = K_sparse_list
         self.K_sparse = 0
         self.U_ksparse = None
+        self.multi_trials = True
         super(EDSSampler, self).__init__(initial_train_mask, adj)
 
     def precomputations(self):
         self.noise = 10  # To delete
-        _, self.U_ksparse, _, _, _, _, _, _, self.num_nodes = greedy_eigenvector_precomputation(
+        _, self.U_ksparse, _, _, _, _, _, _, self.num_nodes = eigenvector_precomputation(
             self.adj, self.K_sparse, self.noise, self.initial_train_mask)
 
     def next_parameter(self):

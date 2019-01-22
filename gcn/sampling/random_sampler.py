@@ -8,6 +8,7 @@ class RandomSampler(Sampler):
     def __init__(self, initial_train_mask, adj, y_train):
         self.name = "Random"
         self.y_train = y_train
+        self.multi_trials = True
         super(RandomSampler, self).__init__(initial_train_mask, adj)
 
     def get_results_tuple(self, fileinfo, settings, result):
