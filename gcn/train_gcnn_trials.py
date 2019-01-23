@@ -17,7 +17,7 @@ def train_results(trials, sampler, label_percent, model_gcn, adj, features,
         result = []
         acc_trials = np.zeros((trials, ))
         actual_label_percent_trials = np.zeros((trials, ))
-        cores = 8
+        cores = 10
         num_iter = int(trials / cores)
 
         pool = mp.Pool(processes=cores)

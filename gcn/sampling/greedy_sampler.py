@@ -53,14 +53,12 @@ class GreedySampler(Sampler):
         return v_index, v_index_H
 
     def get_train_mask_fun(self, seed):
-        train_index = np.argwhere(self.initial_train_mask).reshape(-1)
-
         #TODO filter by adj train
         train_mask = np.zeros(
             (self.initial_train_mask.shape), dtype=bool)  # list of False
 
         random_sampling_set_size = int(
-            (self.label_percent / 100) * train_index.shape[0])
+            (self.label_percent / 100) * self.train_index.shape[0])
         # Get sampling set selected by the diff. algorithms
         greedy_subset = greedy_algo(
             self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h,
@@ -69,7 +67,7 @@ class GreedySampler(Sampler):
         #greedy_subset = random.sample(range(train_index.shape[0]), random_sampling_set_size)
         train_mask[greedy_subset] = True
         mask = np.ones((self.initial_train_mask.shape), dtype=bool)
-        mask[train_index] = 0
+        mask[self.train_index] = 0
         train_mask[mask] = False
-        label_percent = (100 * np.sum(train_mask) / train_index.shape[0])
+        label_percent = (100 * np.sum(train_mask) / self.train_index.shape[0])
         return train_mask, label_percent

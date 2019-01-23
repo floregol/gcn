@@ -1,9 +1,11 @@
 from datetime import datetime
+import numpy as np
 
 
 class Sampler:
     def __init__(self, initial_train_mask, adj):
         self.initial_train_mask = initial_train_mask
+        self.train_index = np.argwhere(self.initial_train_mask).reshape(-1)
         self.adj = adj
         self.label_percent = 0
         self.sampling_config_index = 0

@@ -18,7 +18,7 @@ The goal is to see if one technique is more sensible than an other.
 """
 This is the file to execute to run and save the experiments in the result folder.
 """
-result_folder = "results_sampling"
+result_folder = "official_results_sampling"
 """
 Settings                    : default -> for Kipf GCN settings, quick -> for running the whole thing fast (to check that everything works)
 labels_percent_list         : determines how many labeled nodes will be used for training. Percent with respect to the training set, 100% means the whole training set
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     seed = settings['seed']
     np.random.seed(seed)
 
-    SAMPLING_TRIALS = 16  # How many time the same experiment will be repeated to get standard dev.
+    SAMPLING_TRIALS = 20  # How many time the same experiment will be repeated to get standard dev.
     # Load data. Features and labels.
     adj, features, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(
         FLAGS.dataset)
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     features = preprocess_features(features)
 
     labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
-    #labels_percent_list = [30, 50]
+    #labels_percent_list = [30, 50, 100]
 
     print(
         "Getting powers of the adjacency matrix A"
@@ -62,17 +62,18 @@ if __name__ == "__main__":
     stats_adj_helper = list_adj
 
     print("Finish getting powers of A")
-    fileinfo = "Official"
+    fileinfo = ""
     K_sparse_list = [5, 10, 100]
     noise_list = [0.01, 1, 100]
     maintain_label_balance_list = [False]
     with_test_features_list = [True]
     models_list = ['gcn']
     sampler_list = [
+        MaxDegreeSampler(initial_train_mask, adj),
         EDSSampler(initial_train_mask, adj, K_sparse_list),
         GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
-        RandomSampler(initial_train_mask, adj, y_train),
-        MaxDegreeSampler(initial_train_mask, adj)
+        RandomSampler(initial_train_mask, adj, y_train)
+        
     ]
 
     # Create result folders

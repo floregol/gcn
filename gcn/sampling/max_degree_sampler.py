@@ -3,10 +3,10 @@ from subsample import get_train_mask
 from datetime import datetime
 from tqdm import tqdm
 import numpy as np
+import random
 
 
 class MaxDegreeSampler(Sampler):
-
     def __init__(self, initial_train_mask, adj):
         self.name = "MaxDegree"
         self.initial_train_mask = initial_train_mask
@@ -19,16 +19,44 @@ class MaxDegreeSampler(Sampler):
         results_filename = fileinfo + "maxdegree_results.p"
         return (self.dict_output, results_filename)
 
+    def precomputations(self):
+        degree = np.sum(self.adj, axis=0)[0].tolist()[0]
+        self.dict_degree_train_index = {}
+        self.list_of_degree = []
+        for i in self.train_index:  # Only consider the degree of the node in the taining set
+            if degree[i] in self.dict_degree_train_index:
+                self.dict_degree_train_index[degree[i]].append(
+                    i)  # append to the list of index with this degree
+            else:
+                self.list_of_degree.append(degree[i])
+                self.dict_degree_train_index[degree[i]] = [i]
+        self.list_of_degree.sort(reverse=True)
+
     def get_train_mask_fun(self, seed):
         np.random.seed(seed=seed)  # To garantee randomness between threads
-        degree = np.sum(self.adj, axis=0)
-        train_index = np.argwhere(self.initial_train_mask).reshape(-1)
-        train_mask = np.zeros((initial_train_mask.shape), dtype=bool)  # list of False
-       
+        train_mask = np.zeros(
+            (self.initial_train_mask.shape), dtype=bool)  # list of False
+
         random_sampling_set_size = int(
-            (label_percent / 100) * train_index.shape[0])
-        random_list = random.sample(
-            range(train_index.shape[0]), random_sampling_set_size)
-        train_mask[random_list] = True
-        label_percent = (100 * np.sum(train_mask) / train_index.shape[0])
+            (self.label_percent / 100) * self.train_index.shape[0])
+        max_degree_subset = []
+        for degree in self.list_of_degree:
+            list_node_with_degree = self.dict_degree_train_index[degree]
+            if len(max_degree_subset) + len(
+                    list_node_with_degree) <= random_sampling_set_size:
+                max_degree_subset = max_degree_subset + list_node_with_degree
+            else:  # Need to choose at random the nodes that will be added
+                num_missing_nodes = random_sampling_set_size - len(
+                    max_degree_subset)
+                random_subset_node_with_degree = random.sample(
+                    list_node_with_degree, num_missing_nodes)
+                max_degree_subset = max_degree_subset + random_subset_node_with_degree
+                break
+
+        train_mask[max_degree_subset] = True
+        mask = np.ones((self.initial_train_mask.shape), dtype=bool)
+        mask[self.train_index] = 0
+        train_mask[mask] = False
+        label_percent = (100 * np.sum(train_mask) / self.train_index.shape[0])
+
         return train_mask, label_percent
