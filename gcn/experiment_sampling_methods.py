@@ -69,9 +69,9 @@ if __name__ == "__main__":
     with_test_features_list = [True]
     models_list = ['gcn']
     sampler_list = [
-        MaxDegreeSampler(initial_train_mask, adj),
-        EDSSampler(initial_train_mask, adj, K_sparse_list),
-        GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
+        # MaxDegreeSampler(initial_train_mask, adj),
+        # EDSSampler(initial_train_mask, adj, K_sparse_list),
+        # GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
         RandomSampler(initial_train_mask, adj, y_train)
         
     ]
