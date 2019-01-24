@@ -56,14 +56,16 @@ class GreedySampler(Sampler):
         #TODO filter by adj train
         train_mask = np.zeros(
             (self.initial_train_mask.shape), dtype=bool)  # list of False
-
-        random_sampling_set_size = int(
-            (self.label_percent / 100) * self.train_index.shape[0])
-        # Get sampling set selected by the diff. algorithms
-        greedy_subset = greedy_algo(
-            self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h,
-            self.cov_x, self.cov_w, self.W, random_sampling_set_size,
-            self.num_nodes, True, False)
+        if self.label_percent == 100:
+            greedy_subset = self.train_index
+        else:
+            random_sampling_set_size = int(
+                (self.label_percent / 100) * self.train_index.shape[0])
+            # Get sampling set selected by the diff. algorithms
+            greedy_subset = greedy_algo(
+                self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h,
+                self.cov_x, self.cov_w, self.W, random_sampling_set_size,
+                self.num_nodes, True, False)
         #greedy_subset = random.sample(range(train_index.shape[0]), random_sampling_set_size)
         train_mask[greedy_subset] = True
         mask = np.ones((self.initial_train_mask.shape), dtype=bool)
