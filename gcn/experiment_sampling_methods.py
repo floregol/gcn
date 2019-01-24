@@ -9,7 +9,7 @@ from sampling.random_sampler import RandomSampler
 from sampling.greedy_sampler import GreedySampler
 from sampling.max_degree_sampler import MaxDegreeSampler
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 """
 Sampling experiment. 
 Different sampling algorithms are tried to pick out nodes that will composed the labeled training set for GCN training.
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     sampler_list = [
         # MaxDegreeSampler(initial_train_mask, adj),
         # EDSSampler(initial_train_mask, adj, K_sparse_list),
-        # GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
+        #GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
         RandomSampler(initial_train_mask, adj, y_train)
         
     ]
