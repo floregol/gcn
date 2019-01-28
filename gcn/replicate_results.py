@@ -30,7 +30,7 @@ np.random.seed(seed)
 
 # Load data
 adj, features, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(FLAGS.dataset)
-train_mask = get_train_mask(MAX_LABEL_PERCENT, y_train, initial_train_mask, MAINTAIN_LABEL_BALANCE)
+train_mask, _ = get_train_mask(MAX_LABEL_PERCENT, y_train, initial_train_mask, MAINTAIN_LABEL_BALANCE)
 
 # Partitioning check, ensures that no mask overlaps and that there is a label for every input in the maskS.
 print_partition_index(train_mask, "Train", y_train)

@@ -9,7 +9,7 @@ from sampling.random_sampler import RandomSampler
 from sampling.greedy_sampler import GreedySampler
 from sampling.max_degree_sampler import MaxDegreeSampler
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 """
 Sampling experiment. 
 Different sampling algorithms are tried to pick out nodes that will composed the labeled training set for GCN training.
@@ -18,7 +18,7 @@ The goal is to see if one technique is more sensible than an other.
 """
 This is the file to execute to run and save the experiments in the result folder.
 """
-result_folder = "official_results_sampling"
+result_folder = "subsampled_results_sampling"
 """
 Settings                    : default -> for Kipf GCN settings, quick -> for running the whole thing fast (to check that everything works)
 labels_percent_list         : determines how many labeled nodes will be used for training. Percent with respect to the training set, 100% means the whole training set
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     features = preprocess_features(features)
 
     labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
-    #labels_percent_list = [30, 50, 100]
+    #labels_percent_list = [15,30, 50, 100]
 
     print(
         "Getting powers of the adjacency matrix A"
@@ -65,14 +65,15 @@ if __name__ == "__main__":
     fileinfo = ""
     K_sparse_list = [5, 10, 100]
     noise_list = [0.01, 1, 100]
-    maintain_label_balance_list = [False]
-    with_test_features_list = [True]
-    models_list = ['gcn']
+    MAINTAIN_LABEL_BALANCE = False
+    WITH_TEST = False
+    models_list = ['gcn_subsampled']
     sampler_list = [
-        # MaxDegreeSampler(initial_train_mask, adj),
-        # EDSSampler(initial_train_mask, adj, K_sparse_list),
-        #GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
         RandomSampler(initial_train_mask, adj, y_train)
+        MaxDegreeSampler(initial_train_mask, adj),
+        EDSSampler(initial_train_mask, adj, K_sparse_list),
+        GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
+        
         
     ]
 
@@ -94,7 +95,7 @@ if __name__ == "__main__":
             results_tuples = sampling_experiment(
                 SAMPLING_TRIALS, sampler, adj, initial_train_mask,
                 labels_percent_list, model_gcn, features, y_train, y_val,
-                y_test, val_mask, test_mask, SHOW_TEST_VAL_DATASET_STATS,
+                y_test, val_mask, test_mask, MAINTAIN_LABEL_BALANCE, WITH_TEST,SHOW_TEST_VAL_DATASET_STATS,
                 VERBOSE_TRAINING, settings, fileinfo, stats_adj_helper)
             # Save results
             for dict_output, results_filename in results_tuples:
