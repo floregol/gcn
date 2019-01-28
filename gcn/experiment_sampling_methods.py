@@ -69,7 +69,7 @@ if __name__ == "__main__":
     WITH_TEST = False
     models_list = ['gcn_subsampled']
     sampler_list = [
-        RandomSampler(initial_train_mask, adj, y_train)
+        RandomSampler(initial_train_mask, adj, y_train),
         MaxDegreeSampler(initial_train_mask, adj),
         EDSSampler(initial_train_mask, adj, K_sparse_list),
         GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list),
