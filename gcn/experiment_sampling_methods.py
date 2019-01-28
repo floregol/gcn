@@ -9,7 +9,7 @@ from sampling.random_sampler import RandomSampler
 from sampling.greedy_sampler import GreedySampler
 from sampling.max_degree_sampler import MaxDegreeSampler
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 """
 Sampling experiment. 
 Different sampling algorithms are tried to pick out nodes that will composed the labeled training set for GCN training.
