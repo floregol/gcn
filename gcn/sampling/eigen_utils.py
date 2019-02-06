@@ -24,3 +24,11 @@ def eigenvector_precomputation(adj, K_sparse, noise, initial_train_mask):
     W = get_W(V_ksparse_H, H_h, H, V_ksparse)
     print('time' + str(time.time() - now))
     return V_ksparse, V_ksparse_H, get_v, H, H_h, cov_x, cov_w, W, num_nodes
+
+# Compute P = (L-aI)-^(-1)
+def get_P_matrix(adj, lam):
+    A = sp.csr_matrix.todense(adj)
+    degree = np.array(np.sum(A, axis=0)[0])
+    D = degree * np.eye(degree.shape[1])
+    L = D - A
+    return np.linalg.inv(L - lam * np.eye(degree.shape[1]))
