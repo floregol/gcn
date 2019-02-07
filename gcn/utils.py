@@ -106,7 +106,7 @@ def load_data(dataset_str):
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
 
-    return adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    return adj, features,labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
 
 
 def sparse_to_tuple(sparse_mx):

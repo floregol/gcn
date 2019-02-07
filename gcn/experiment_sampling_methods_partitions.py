@@ -8,7 +8,7 @@ from sampling.eds_sampler import EDSSampler
 from sampling.random_sampler import RandomSampler
 from sampling.greedy_sampler import GreedySampler
 from sampling.max_degree_sampler import MaxDegreeSampler
-
+from sklearn.model_selection import StratifiedShuffleSplit
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 """
 Sampling experiment. 
@@ -37,20 +37,22 @@ if __name__ == "__main__":
     set_tf_flags(settings['params'], flags, verbose=True)
 
     # Verbose settings
-    SHOW_TEST_VAL_DATASET_STATS = False
+    SHOW_TEST_VAL_DATASET_STATS = True
     VERBOSE_TRAINING = False
 
     # Random seed
     seed = settings['seed']
     np.random.seed(seed)
 
-    SAMPLING_TRIALS = 16  # How many time the same experiment will be repeated to get standard dev.
+    SAMPLING_TRIALS = 1 # How many time the same experiment will be repeated to get standard dev.
     # Load data. Features and labels.
-    adj, features, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(
+    adj, features,labels, y_train, y_val, y_test, initial_train_mask, val_mask, test_mask = load_data(
         FLAGS.dataset)
+       
     # Some preprocessing
+    n = features.shape[0]
     features = preprocess_features(features)
-
+   
     labels_percent_list = [5, 10, 15, 20, 30, 40, 50, 60, 75, 85, 100]
     #labels_percent_list = [15,30, 50, 100]
 
@@ -63,20 +65,12 @@ if __name__ == "__main__":
 
     print("Finish getting powers of A")
     fileinfo = ""
-    K_sparse_list = [5, 10, 100]
+    K_sparse_list = [5,10,100]
     noise_list = [0.01, 1, 100]
     MAINTAIN_LABEL_BALANCE = False
-    WITH_TEST = False
+    WITH_TEST = True
     models_list = ['gcn']
-    sampler_list = [
-        RandomSampler(initial_train_mask, adj, y_train),
-        # MaxDegreeSampler(initial_train_mask, adj),
-        # EDSSampler(initial_train_mask, adj, K_sparse_list),
-        GreedySampler(initial_train_mask, adj, K_sparse_list, noise_list)
-        
-        
-    ]
-
+  
     # Create result folders
 
     print("Saving results in folder " + result_folder)
@@ -85,8 +79,35 @@ if __name__ == "__main__":
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)
     
-    for partition in partitions:
-        # Run the experiment
+    NUM_CROSS_VAL = 3
+    test_split = StratifiedShuffleSplit(n_splits=NUM_CROSS_VAL, test_size=0.37, random_state=seed)
+    test_split.get_n_splits(labels, labels)
+    
+    i = 1
+    for train_index, test_index in test_split.split(labels, labels):
+       
+       
+        train_mask = np.zeros(n, dtype=bool)
+        val_mask = np.zeros(n, dtype=bool)
+        test_mask = np.zeros(n, dtype=bool)
+
+        train_mask[train_index[0:1208]] = True
+        val_mask[train_index[1208:]] = True
+        test_mask[test_index] = True
+       
+        y_train = np.zeros(labels.shape, dtype=int)
+        y_val = np.zeros(labels.shape, dtype=int)
+        y_test = np.zeros(labels.shape, dtype=int)
+        y_train[train_mask, :] = labels[train_mask, :]
+        y_val[val_mask, :] = labels[val_mask, :]
+        y_test[test_mask, :] = labels[test_mask, :]
+       
+        sampler_list = [
+        # RandomSampler(train_mask, adj, y_train),
+        # MaxDegreeSampler(initial_train_mask, adj),
+        # EDSSampler(initial_train_mask, adj, K_sparse_list),
+        GreedySampler(train_mask, adj, K_sparse_list, noise_list)
+        ]
         for sampler in sampler_list:
             print()
             print("Sampling method : " + sampler.name)
@@ -94,7 +115,7 @@ if __name__ == "__main__":
             for model_gcn in models_list:
                 # Run sampling experiment
                 results_tuples = sampling_experiment(
-                    SAMPLING_TRIALS, sampler, adj, initial_train_mask,
+                    SAMPLING_TRIALS, sampler, adj, train_mask,
                     labels_percent_list, model_gcn, features, y_train, y_val,
                     y_test, val_mask, test_mask, MAINTAIN_LABEL_BALANCE, WITH_TEST,SHOW_TEST_VAL_DATASET_STATS,
                     VERBOSE_TRAINING, settings, fileinfo, stats_adj_helper)
@@ -105,5 +126,6 @@ if __name__ == "__main__":
                         open(
                             os.path.join(
                                 result_folder,
-                                settings['params']['dataset'] + "_sampling_method="
+                                "Partition_"+str(i)+"_"+settings['params']['dataset'] + "_sampling_method="
                                 + sampler.name + "_" + results_filename), 'wb'))
+        i+=1

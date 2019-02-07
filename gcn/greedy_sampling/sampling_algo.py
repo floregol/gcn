@@ -32,7 +32,7 @@ def greedy_algo(V_ksparse,
                        remaining_nodes, G_subset)
 
         G_subset.append(u)  # Iterativly add a new node to the set
-
+      
         remaining_nodes.remove(u)
 
     return G_subset

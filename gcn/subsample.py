@@ -59,10 +59,8 @@ def get_train_mask(label_percent,
                 train_mask[ones] = True
 
     else:
-        random_sampling_set_size = int(
-            (label_percent / 100) * train_index.shape[0])
-        random_list = random.sample(
-            range(train_index.shape[0]), random_sampling_set_size)
+        random_sampling_set_size = int((label_percent / 100) * train_index.shape[0])
+        random_list = random.sample(list(train_index), random_sampling_set_size)
         train_mask[random_list] = True
     label_percent = (100 * np.sum(train_mask) / train_index.shape[0])
     return train_mask, label_percent

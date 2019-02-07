@@ -25,7 +25,16 @@ class GreedySampler(Sampler):
     def precomputations(self):
         self.V_ksparse, self.V_ksparse_H, _, self.H, self.H_h, self.cov_x, self.cov_w, self.W, self.num_nodes = eigenvector_precomputation(
             self.adj, self.K_sparse, self.noise, self.initial_train_mask)
-
+        greedy_subset = greedy_algo(
+                self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h,
+                self.cov_x, self.cov_w, self.W, self.initial_train_mask.shape[0],
+                self.num_nodes, True, False)
+        print(greedy_subset[0:10])
+        self.greedy_training_nodes = []
+        for node in greedy_subset:
+            if node in self.train_index:
+                self.greedy_training_nodes.append(node)
+        print(self.greedy_training_nodes[0:10])
     def next_parameter(self):
         if (self.sampling_config_index == len(self.noise_list) * len(
                 self.K_sparse_list)):
@@ -59,13 +68,11 @@ class GreedySampler(Sampler):
         if self.label_percent == 100:
             greedy_subset = self.train_index
         else:
-            random_sampling_set_size = int(
-                (self.label_percent / 100) * self.train_index.shape[0])
+            random_sampling_set_size = int((self.label_percent / 100) * self.train_index.shape[0])
+            greedy_subset = self.greedy_training_nodes[0:random_sampling_set_size]
+                
             # Get sampling set selected by the diff. algorithms
-            greedy_subset = greedy_algo(
-                self.V_ksparse, self.V_ksparse_H, self.get_v, self.H, self.H_h,
-                self.cov_x, self.cov_w, self.W, random_sampling_set_size,
-                self.num_nodes, True, False)
+        print(greedy_subset[0:10])
         #greedy_subset = random.sample(range(train_index.shape[0]), random_sampling_set_size)
         train_mask[greedy_subset] = True
         mask = np.ones((self.initial_train_mask.shape), dtype=bool)
