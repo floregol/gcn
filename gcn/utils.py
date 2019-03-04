@@ -106,7 +106,7 @@ def load_data(dataset_str):
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
 
-    return adj, features,labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    return adj, features, labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
 
 
 def sparse_to_tuple(sparse_mx):
@@ -168,3 +168,15 @@ def construct_feed_dict(features, support, labels, labels_mask, sub_sampled_supp
     feed_dict.update({placeholders['num_features_nonzero']: features[1].shape})
     return feed_dict
 
+
+def squash_list(bins, scores_dicts):
+    avg_list = []
+    for x in bins:
+        b = []
+        for scores_dict in scores_dicts:
+            if x in scores_dict:
+                b.append(scores_dict[x])
+        
+        if len(b) > 0:
+            avg_list.append((x, np.mean(b)))
+    return avg_list
