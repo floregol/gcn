@@ -20,7 +20,7 @@ np.random.seed(seed)
 TRIALS = 10
 n = features.shape[0]
 known_labels = [2, 5, 10, 20, 40, 50, 85]
-num_new_nodes_per_class = 10
+num_new_nodes_per_class = 50
 resolution = 21
 MAINTAIN_LABEL_BALANCE = True
 NUM_CROSS_VAL = 4

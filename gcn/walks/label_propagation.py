@@ -60,6 +60,8 @@ def compute_label_prop(y_train, train_mask, initial_train_mask, P, num_new_nodes
     unlabled_index = np.where(filtered_train_mask == False)[0]
 
     # Compute entroy/ magnitude at every node
+    P = normalize(P,norm='l1', axis =0)
+   
     probabilities = normalize(P, norm='l1', axis=1)
 
     max_entropy = int(math.log(P.shape[1]) * 100)
